@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MEAL_TYPES, UNITS, type Ingredient, type Recipe } from "@/lib/recipes/types";
 
 const inputClasses =
-  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20";
+  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20";
 
 const labelClasses = "text-sm font-medium text-gray-700";
 
@@ -46,6 +46,22 @@ export function RecipeForm({
   const [difficulty, setDifficulty] = useState(initialRecipe?.difficulty ?? 0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [existingImageUrl] = useState(initialRecipe?.image_url ?? null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initialRecipe?.image_url ?? null,
+  );
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = (file: File | null) => {
+    setImageFile(file);
+    setImagePreview(file ? URL.createObjectURL(file) : existingImageUrl);
+  };
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     initialRecipe?.ingredients?.length
       ? initialRecipe.ingredients
@@ -227,7 +243,7 @@ export function RecipeForm({
           <button
             type="button"
             onClick={addCategory}
-            className="shrink-0 rounded-lg bg-orange-600 px-4 text-sm font-semibold text-white hover:bg-orange-700"
+            className="shrink-0 rounded-lg bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-700"
           >
             +
           </button>
@@ -239,7 +255,7 @@ export function RecipeForm({
                 type="button"
                 key={category}
                 onClick={() => setCategories(categories.filter((c) => c !== category))}
-                className="flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-700"
+                className="flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700"
               >
                 {category} ✕
               </button>
@@ -254,7 +270,7 @@ export function RecipeForm({
             type="checkbox"
             checked={isVegetarian}
             onChange={(e) => setIsVegetarian(e.target.checked)}
-            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+            className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
           />
           Vegetarian
         </label>
@@ -263,13 +279,13 @@ export function RecipeForm({
             type="checkbox"
             checked={isFish}
             onChange={(e) => setIsFish(e.target.checked)}
-            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+            className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
           />
           Fish
         </label>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="recipe-portions" className={labelClasses}>
             Portions
@@ -315,38 +331,53 @@ export function RecipeForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className={labelClasses}>Image</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-          className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-100"
-        />
-        {existingImageUrl && !imageFile && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={existingImageUrl}
-            alt=""
-            className="mt-1 h-24 w-24 rounded-lg object-cover"
-          />
-        )}
+        <label className={labelClasses}>Photo</label>
+        <div className="flex items-center gap-4">
+          <label className="flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-gray-300 bg-gray-50 text-2xl transition hover:border-sky-400 hover:bg-sky-50">
+            {imagePreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imagePreview}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              "📷"
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e.target.files?.[0] ?? null)}
+              className="hidden"
+            />
+          </label>
+          <label className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+            {imagePreview ? "Change photo" : "Choose photo"}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e.target.files?.[0] ?? null)}
+              className="hidden"
+            />
+          </label>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <label className={labelClasses}>Ingredients</label>
         {ingredients.map((ingredient, index) => (
-          <div key={index} className="flex gap-2">
+          <div key={index} className="flex flex-wrap items-center gap-2">
             <input
               type="text"
               value={ingredient.amount}
               onChange={(e) => updateIngredient(index, { amount: e.target.value })}
               placeholder="Amount"
-              className={`${inputClasses} w-20`}
+              className={`${inputClasses} w-16 sm:w-20`}
             />
             <select
               value={ingredient.unit}
               onChange={(e) => updateIngredient(index, { unit: e.target.value })}
-              className={`${inputClasses} w-24`}
+              className={`${inputClasses} w-20 sm:w-24`}
             >
               {UNITS.map((unit) => (
                 <option key={unit} value={unit}>
@@ -359,7 +390,7 @@ export function RecipeForm({
               value={ingredient.name}
               onChange={(e) => updateIngredient(index, { name: e.target.value })}
               placeholder="Ingredient, e.g. egg"
-              className={inputClasses}
+              className={`${inputClasses} min-w-[140px] flex-1`}
             />
             <button
               type="button"
@@ -374,7 +405,7 @@ export function RecipeForm({
         <button
           type="button"
           onClick={() => setIngredients([...ingredients, emptyIngredient()])}
-          className="self-start text-sm font-medium text-orange-700 hover:text-orange-800"
+          className="self-start text-sm font-medium text-sky-700 hover:text-sky-800"
         >
           + Add ingredient
         </button>
@@ -406,7 +437,7 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={status === "saving"}
-          className="flex-1 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {status === "saving" ? "Saving..." : "Save recipe"}
         </button>

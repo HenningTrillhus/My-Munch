@@ -9,15 +9,15 @@ type Mode = "choice" | "login" | "signup";
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 
 const inputClasses =
-  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20";
+  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20";
 
 const labelClasses = "text-sm font-medium text-gray-700";
 
 const primaryButtonClasses =
-  "w-full rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50";
 
 const secondaryButtonClasses =
-  "w-full rounded-lg border border-orange-200 bg-white px-4 py-2.5 text-sm font-semibold text-orange-700 shadow-sm transition hover:bg-orange-50";
+  "w-full rounded-lg border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50";
 
 function ErrorBanner({ message }: { message: string }) {
   return (
@@ -31,14 +31,14 @@ export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("choice");
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-orange-50 via-white to-white px-4 py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-sky-50 via-white to-white px-4 py-12">
       <div className="mb-8 flex flex-col items-center gap-1">
         <span className="text-3xl">🍲</span>
         <h1 className="text-xl font-bold tracking-tight text-gray-900">My Munch</h1>
         <p className="text-sm text-gray-500">Share and discover recipes</p>
       </div>
 
-      <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-xl shadow-orange-900/5">
+      <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-sky-900/5 sm:p-8">
         {mode !== "choice" && (
           <button
             onClick={() => setMode("choice")}

@@ -21,7 +21,7 @@ export const EMPTY_FILTERS: FilterState = {
 };
 
 const selectClasses =
-  "rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-orange-500";
+  "rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-sky-500";
 
 export function RecipeFilters({
   filters,
@@ -39,7 +39,7 @@ export function RecipeFilters({
         value={filters.search}
         onChange={(e) => onChange({ ...filters, search: e.target.value })}
         placeholder="Search for a recipe..."
-        className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500"
+        className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-sky-500"
       />
       <div className="flex flex-wrap items-center gap-3">
         <select
@@ -83,7 +83,7 @@ export function RecipeFilters({
             type="checkbox"
             checked={filters.vegetarian}
             onChange={(e) => onChange({ ...filters, vegetarian: e.target.checked })}
-            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+            className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
           />
           Vegetarian
         </label>
@@ -92,7 +92,7 @@ export function RecipeFilters({
             type="checkbox"
             checked={filters.fish}
             onChange={(e) => onChange({ ...filters, fish: e.target.checked })}
-            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+            className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
           />
           Fish
         </label>

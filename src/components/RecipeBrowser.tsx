@@ -39,7 +39,7 @@ export function RecipeBrowser({
       {showCreateButton && userId && (
         <button
           onClick={() => setShowForm(true)}
-          className="self-center rounded-lg bg-orange-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700"
+          className="self-center rounded-lg bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
         >
           + New recipe
         </button>
@@ -58,8 +58,8 @@ export function RecipeBrowser({
       )}
 
       {showForm && userId && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 py-12">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-3 py-6 sm:p-4 sm:py-12">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-8">
             <h2 className="mb-5 text-xl font-semibold text-gray-900">New recipe</h2>
             <RecipeForm
               userId={userId}

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 
 const inputClasses =
-  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20";
+  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20";
 
 const labelClasses = "text-sm font-medium text-gray-700";
 
@@ -105,7 +105,7 @@ export function AccountSettingsForm({
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {status === "loading" ? "Saving..." : "Save changes"}
       </button>

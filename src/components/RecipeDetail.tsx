@@ -51,7 +51,7 @@ export function RecipeDetail({
 
   if (editing) {
     return (
-      <div className="mx-auto max-w-lg rounded-2xl border border-gray-100 bg-white p-8 shadow-xl shadow-orange-900/5">
+      <div className="mx-auto max-w-lg rounded-2xl border border-gray-100 bg-white p-5 shadow-xl shadow-sky-900/5 sm:p-8">
         <h2 className="mb-5 text-xl font-semibold text-gray-900">Edit recipe</h2>
         <RecipeForm
           userId={userId!}
@@ -93,8 +93,8 @@ export function RecipeDetail({
         )}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-orange-900/5">
-        <div className="flex h-56 items-center justify-center bg-gradient-to-b from-orange-100 to-orange-50 text-6xl">
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-sky-900/5">
+        <div className="flex h-56 items-center justify-center bg-gradient-to-b from-sky-100 to-sky-50 text-6xl">
           {recipe.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -118,7 +118,7 @@ export function RecipeDetail({
               {recipe.categories.map((c) => (
                 <span
                   key={c}
-                  className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-700"
+                  className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700"
                 >
                   {c}
                 </span>
@@ -204,7 +204,7 @@ export function RecipeDetail({
                 onBlur={saveNotes}
                 rows={3}
                 placeholder="Write a note about this recipe — e.g. what you changed or what worked well..."
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-sky-500 focus:bg-white"
               />
               <p className="mt-1 text-xs text-gray-400">
                 {notesStatus === "saving"
@@ -233,7 +233,7 @@ function InstructionSteps({ steps }: { steps: string[] }) {
             onChange={() =>
               setChecked(checked.map((c, idx) => (idx === i ? !c : c)))
             }
-            className="mt-0.5 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+            className="mt-0.5 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
           />
           <span className={checked[i] ? "text-gray-400 line-through" : ""}>
             {step}

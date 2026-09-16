@@ -7,7 +7,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
       href={`/recipes/${recipe.id}`}
       className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
     >
-      <div className="flex h-36 items-center justify-center bg-gradient-to-b from-orange-100 to-orange-50 text-4xl">
+      <div className="flex h-36 items-center justify-center bg-gradient-to-b from-sky-100 to-sky-50 text-4xl">
         {recipe.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -30,7 +30,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
           {recipe.categories.map((category) => (
             <span
               key={category}
-              className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-700"
+              className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700"
             >
               {category}
             </span>

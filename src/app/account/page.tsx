@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/AppHeader";
+import { AppShell } from "@/components/AppShell";
 import { AccountSettingsForm } from "@/components/AccountSettingsForm";
 
 export default async function AccountPage() {
@@ -24,9 +24,8 @@ export default async function AccountPage() {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-white">
-      <AppHeader initial={initial} />
-      <main className="mx-auto flex max-w-sm flex-col gap-4 px-4 py-12">
+    <AppShell initial={initial}>
+      <main className="mx-auto flex max-w-sm flex-col gap-4 px-4 py-8 sm:py-12">
         <Link
           href="/dashboard"
           className="flex items-center gap-1 text-sm font-medium text-gray-400 transition hover:text-gray-700"
@@ -34,7 +33,7 @@ export default async function AccountPage() {
           ← Back
         </Link>
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-xl shadow-orange-900/5">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-sky-900/5 sm:p-8">
           <h1 className="mb-1 text-xl font-semibold text-gray-900">
             Account settings
           </h1>
@@ -58,6 +57,6 @@ export default async function AccountPage() {
           </div>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

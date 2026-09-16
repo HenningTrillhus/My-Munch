@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/AppHeader";
+import { AppShell } from "@/components/AppShell";
 import { RecipeDetail } from "@/components/RecipeDetail";
 
 export default async function RecipeDetailPage({
@@ -38,15 +38,14 @@ export default async function RecipeDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-white">
-      <AppHeader initial={initial} />
-      <main className="px-4 py-10">
+    <AppShell initial={initial}>
+      <main className="px-4 py-8 sm:py-10">
         <RecipeDetail
           recipe={recipe}
           isOwner={recipe.owner_id === user.id}
           userId={user.id}
         />
       </main>
-    </div>
+    </AppShell>
   );
 }

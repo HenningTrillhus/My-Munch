@@ -8,7 +8,7 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-b from-orange-50 via-white to-white px-4 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-b from-sky-50 via-white to-white px-4 text-center">
       <span className="text-5xl">🍲</span>
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Munch</h1>
@@ -18,7 +18,7 @@ export default async function Home() {
       </div>
       <Link
         href={user ? "/dashboard" : "/login"}
-        className="rounded-lg bg-orange-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700"
+        className="rounded-lg bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
       >
         {user ? "Go to dashboard" : "Get started"}
       </Link>
