@@ -33,6 +33,7 @@ export function RecipeBrowser({
   );
 
   const filtered = useMemo(() => applyFilters(recipes, filters), [recipes, filters]);
+  const noResultsFromFilters = recipes.length > 0 && filtered.length === 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,13 +49,27 @@ export function RecipeBrowser({
       <RecipeFilters filters={filters} onChange={setFilters} categories={categories} />
 
       {filtered.length === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-500">{emptyMessage}</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
+        <div className="flex flex-col items-center gap-2 py-12 text-center">
+          <span className="text-3xl">{noResultsFromFilters ? "🔍" : "🍳"}</span>
+          <p className="text-sm text-gray-500">
+            {noResultsFromFilters
+              ? "No recipes match your filters."
+              : emptyMessage}
+          </p>
         </div>
+      ) : (
+        <>
+          <p className="text-sm text-gray-500">
+            {filtered.length === recipes.length
+              ? `${recipes.length} recipe${recipes.length === 1 ? "" : "s"}`
+              : `Showing ${filtered.length} of ${recipes.length} recipes`}
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+        </>
       )}
 
       {showForm && userId && (

@@ -125,11 +125,11 @@ export function applyFilters<
       return false;
     }
     if (filters.timeBucket) {
-      const bucket = TIME_BUCKETS.find((b) => b.label === filters.timeBucket);
-      const prevMax =
-        TIME_BUCKETS[TIME_BUCKETS.indexOf(bucket!) - 1]?.max ?? 0;
+      const index = TIME_BUCKETS.findIndex((b) => b.label === filters.timeBucket);
+      const bucket = TIME_BUCKETS[index];
+      const prevMax = index > 0 ? TIME_BUCKETS[index - 1].max : -1;
       const time = recipe.prep_time_minutes;
-      if (time == null || time <= prevMax || time > bucket!.max) {
+      if (time == null || time <= prevMax || time > bucket.max) {
         return false;
       }
     }

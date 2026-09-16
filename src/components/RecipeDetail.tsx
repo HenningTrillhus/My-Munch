@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { RecipeForm } from "@/components/RecipeForm";
 import type { Recipe } from "@/lib/recipes/types";
@@ -19,10 +18,20 @@ export function RecipeDetail({
   const router = useRouter();
   const [recipe, setRecipe] = useState(initialRecipe);
   const [editing, setEditing] = useState(false);
-  const [notes, setNotes] = useState(recipe.notes ?? "");
+  const [notes, setNotes] = useState(initialRecipe.notes ?? "");
   const [notesStatus, setNotesStatus] = useState<"idle" | "saving" | "saved">(
     "idle",
   );
+
+  // initialRecipe is a fresh object every time the server re-sends data
+  // (e.g. after router.refresh() following an edit). Re-sync local state
+  // during render (not in an effect) or edits appear to not save.
+  const [syncedRecipe, setSyncedRecipe] = useState(initialRecipe);
+  if (initialRecipe !== syncedRecipe) {
+    setSyncedRecipe(initialRecipe);
+    setRecipe(initialRecipe);
+    setNotes(initialRecipe.notes ?? "");
+  }
 
   const saveNotes = async () => {
     setNotesStatus("saving");
@@ -39,6 +48,14 @@ export function RecipeDetail({
       .from("recipes")
       .update({ personal_rating: newValue || null })
       .eq("id", recipe.id);
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(isOwner ? "/recipes" : "/discover");
+    }
   };
 
   const handleDelete = async () => {
@@ -69,12 +86,12 @@ export function RecipeDetail({
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center justify-between">
-        <Link
-          href={isOwner ? "/recipes" : "/discover"}
+        <button
+          onClick={handleBack}
           className="text-sm font-medium text-gray-400 transition hover:text-gray-700"
         >
           ← Back
-        </Link>
+        </button>
         {isOwner && (
           <div className="flex gap-2">
             <button
