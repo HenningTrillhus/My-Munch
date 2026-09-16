@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
@@ -31,8 +32,22 @@ export default async function DashboardPage() {
           Welcome back, {firstName}!
         </h1>
         <p className="max-w-sm text-sm text-gray-500">
-          Your recipe feed will show up here soon. For now, this is home base.
+          Collect your own recipes or see what others are cooking.
         </p>
+        <div className="mt-2 flex gap-3">
+          <Link
+            href="/recipes"
+            className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700"
+          >
+            My Recipes
+          </Link>
+          <Link
+            href="/discover"
+            className="rounded-lg border border-orange-200 bg-white px-5 py-2.5 text-sm font-semibold text-orange-700 shadow-sm transition hover:bg-orange-50"
+          >
+            Discover
+          </Link>
+        </div>
       </main>
     </div>
   );

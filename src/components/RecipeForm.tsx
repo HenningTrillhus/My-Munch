@@ -1,0 +1,421 @@
+"use client";
+
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { MEAL_TYPES, UNITS, type Ingredient, type Recipe } from "@/lib/recipes/types";
+
+const inputClasses =
+  "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20";
+
+const labelClasses = "text-sm font-medium text-gray-700";
+
+function emptyIngredient(): Ingredient {
+  return { amount: "", unit: UNITS[0], name: "" };
+}
+
+export function RecipeForm({
+  userId,
+  initialRecipe,
+  onSaved,
+  onCancel,
+}: {
+  userId: string;
+  initialRecipe?: Recipe;
+  onSaved: (recipeId: string) => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(initialRecipe?.title ?? "");
+  const [mealType, setMealType] = useState(initialRecipe?.meal_type ?? "");
+  const [prepTime, setPrepTime] = useState(
+    initialRecipe?.prep_time_minutes?.toString() ?? "",
+  );
+  const [categories, setCategories] = useState<string[]>(
+    initialRecipe?.categories ?? [],
+  );
+  const [categoryInput, setCategoryInput] = useState("");
+  const [isVegetarian, setIsVegetarian] = useState(
+    initialRecipe?.is_vegetarian ?? false,
+  );
+  const [isFish, setIsFish] = useState(initialRecipe?.is_fish ?? false);
+  const [portions, setPortions] = useState(
+    initialRecipe?.portions?.toString() ?? "1",
+  );
+  const [priceKr, setPriceKr] = useState(
+    initialRecipe?.price_kr?.toString() ?? "",
+  );
+  const [difficulty, setDifficulty] = useState(initialRecipe?.difficulty ?? 0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [existingImageUrl] = useState(initialRecipe?.image_url ?? null);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    initialRecipe?.ingredients?.length
+      ? initialRecipe.ingredients
+      : [emptyIngredient()],
+  );
+  const [instructionsText, setInstructionsText] = useState(
+    initialRecipe?.instructions?.join("\n") ?? "",
+  );
+  const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const addCategory = () => {
+    const value = categoryInput.trim();
+    if (value && !categories.includes(value)) {
+      setCategories([...categories, value]);
+    }
+    setCategoryInput("");
+  };
+
+  const updateIngredient = (index: number, patch: Partial<Ingredient>) => {
+    setIngredients(
+      ingredients.map((ing, i) => (i === index ? { ...ing, ...patch } : ing)),
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+
+    const steps = instructionsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (!title.trim()) {
+      setStatus("error");
+      setErrorMessage("Title is required.");
+      return;
+    }
+    if (steps.length === 0) {
+      setStatus("error");
+      setErrorMessage("Add at least one instruction step.");
+      return;
+    }
+
+    setStatus("saving");
+    const supabase = createClient();
+
+    let imageUrl = existingImageUrl;
+    if (imageFile) {
+      const path = `${userId}/${crypto.randomUUID()}-${imageFile.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("recipe-images")
+        .upload(path, imageFile);
+
+      if (uploadError) {
+        setStatus("error");
+        setErrorMessage("Failed to upload image: " + uploadError.message);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("recipe-images")
+        .getPublicUrl(path);
+      imageUrl = publicUrlData.publicUrl;
+    }
+
+    const payload = {
+      title: title.trim(),
+      meal_type: mealType || null,
+      prep_time_minutes: prepTime ? Number(prepTime) : null,
+      categories,
+      is_vegetarian: isVegetarian,
+      is_fish: isFish,
+      portions: portions ? Number(portions) : 1,
+      price_kr: priceKr ? Number(priceKr) : null,
+      difficulty: difficulty || null,
+      image_url: imageUrl,
+      ingredients: ingredients.filter((ing) => ing.name.trim()),
+      instructions: steps,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (initialRecipe) {
+      const { error } = await supabase
+        .from("recipes")
+        .update(payload)
+        .eq("id", initialRecipe.id);
+
+      if (error) {
+        setStatus("error");
+        setErrorMessage(error.message);
+        return;
+      }
+      onSaved(initialRecipe.id);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("recipes")
+      .insert({ ...payload, owner_id: userId })
+      .select("id")
+      .single();
+
+    if (error || !data) {
+      setStatus("error");
+      setErrorMessage(error?.message ?? "Something went wrong.");
+      return;
+    }
+    onSaved(data.id);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="recipe-title" className={labelClasses}>
+          Title *
+        </label>
+        <input
+          id="recipe-title"
+          type="text"
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className={inputClasses}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="recipe-type" className={labelClasses}>
+            Type
+          </label>
+          <select
+            id="recipe-type"
+            value={mealType}
+            onChange={(e) => setMealType(e.target.value)}
+            className={inputClasses}
+          >
+            <option value="">Not selected</option>
+            {MEAL_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="recipe-time" className={labelClasses}>
+            Prep time (min)
+          </label>
+          <input
+            id="recipe-time"
+            type="number"
+            min={0}
+            value={prepTime}
+            onChange={(e) => setPrepTime(e.target.value)}
+            className={inputClasses}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClasses}>Categories</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={categoryInput}
+            onChange={(e) => setCategoryInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addCategory();
+              }
+            }}
+            placeholder="e.g. salad, healthy"
+            className={inputClasses}
+          />
+          <button
+            type="button"
+            onClick={addCategory}
+            className="shrink-0 rounded-lg bg-orange-600 px-4 text-sm font-semibold text-white hover:bg-orange-700"
+          >
+            +
+          </button>
+        </div>
+        {categories.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {categories.map((category) => (
+              <button
+                type="button"
+                key={category}
+                onClick={() => setCategories(categories.filter((c) => c !== category))}
+                className="flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-700"
+              >
+                {category} ✕
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-4">
+        <label className="flex items-center gap-1.5 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={isVegetarian}
+            onChange={(e) => setIsVegetarian(e.target.checked)}
+            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+          />
+          Vegetarian
+        </label>
+        <label className="flex items-center gap-1.5 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={isFish}
+            onChange={(e) => setIsFish(e.target.checked)}
+            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+          />
+          Fish
+        </label>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="recipe-portions" className={labelClasses}>
+            Portions
+          </label>
+          <input
+            id="recipe-portions"
+            type="number"
+            min={1}
+            value={portions}
+            onChange={(e) => setPortions(e.target.value)}
+            className={inputClasses}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="recipe-price" className={labelClasses}>
+            Price (kr)
+          </label>
+          <input
+            id="recipe-price"
+            type="number"
+            min={0}
+            value={priceKr}
+            onChange={(e) => setPriceKr(e.target.value)}
+            className={inputClasses}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <span className={labelClasses}>Difficulty</span>
+          <div className="flex h-[42px] items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <button
+                type="button"
+                key={value}
+                onClick={() => setDifficulty(value === difficulty ? 0 : value)}
+                className={`text-xl ${value <= difficulty ? "text-amber-500" : "text-gray-300"}`}
+                aria-label={`${value} of 5`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClasses}>Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-100"
+        />
+        {existingImageUrl && !imageFile && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={existingImageUrl}
+            alt=""
+            className="mt-1 h-24 w-24 rounded-lg object-cover"
+          />
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className={labelClasses}>Ingredients</label>
+        {ingredients.map((ingredient, index) => (
+          <div key={index} className="flex gap-2">
+            <input
+              type="text"
+              value={ingredient.amount}
+              onChange={(e) => updateIngredient(index, { amount: e.target.value })}
+              placeholder="Amount"
+              className={`${inputClasses} w-20`}
+            />
+            <select
+              value={ingredient.unit}
+              onChange={(e) => updateIngredient(index, { unit: e.target.value })}
+              className={`${inputClasses} w-24`}
+            >
+              {UNITS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={ingredient.name}
+              onChange={(e) => updateIngredient(index, { name: e.target.value })}
+              placeholder="Ingredient, e.g. egg"
+              className={inputClasses}
+            />
+            <button
+              type="button"
+              onClick={() => setIngredients(ingredients.filter((_, i) => i !== index))}
+              aria-label="Remove ingredient"
+              className="shrink-0 text-gray-400 hover:text-red-600"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setIngredients([...ingredients, emptyIngredient()])}
+          className="self-start text-sm font-medium text-orange-700 hover:text-orange-800"
+        >
+          + Add ingredient
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="recipe-instructions" className={labelClasses}>
+          Instructions — one step per line *
+        </label>
+        <textarea
+          id="recipe-instructions"
+          required
+          rows={5}
+          value={instructionsText}
+          onChange={(e) => setInstructionsText(e.target.value)}
+          placeholder={"Mix milk and egg\nWhisk well\nFry on medium heat\n..."}
+          className={inputClasses}
+        />
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={status === "saving"}
+          className="flex-1 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {status === "saving" ? "Saving..." : "Save recipe"}
+        </button>
+      </div>
+      {status === "error" && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errorMessage}
+        </p>
+      )}
+    </form>
+  );
+}
