@@ -11,20 +11,21 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, full_name")
+    .eq("id", user.id)
+    .single();
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      {user.user_metadata?.avatar_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={user.user_metadata.avatar_url}
-          alt=""
-          className="h-16 w-16 rounded-full"
-        />
-      )}
       <h1 className="text-2xl font-semibold">
-        Welcome, {user.user_metadata?.full_name ?? user.email}
+        Welcome, {profile?.full_name ?? user.email}
       </h1>
-      <p className="text-sm text-black/60">{user.email}</p>
+      <p className="text-sm text-black/60">
+        {profile?.username ? `@${profile.username} — ` : ""}
+        {user.email}
+      </p>
       <form action="/auth/signout" method="post">
         <button
           type="submit"
