@@ -8,23 +8,20 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      <h1 className="text-3xl font-semibold">Welcome</h1>
-      {user ? (
-        <Link
-          href="/dashboard"
-          className="rounded-md bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80"
-        >
-          Go to dashboard
-        </Link>
-      ) : (
-        <Link
-          href="/login"
-          className="rounded-md bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80"
-        >
-          Sign in
-        </Link>
-      )}
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-b from-orange-50 via-white to-white px-4 text-center">
+      <span className="text-5xl">🍲</span>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Munch</h1>
+        <p className="text-base text-gray-500">
+          A place to share and discover food recipes.
+        </p>
+      </div>
+      <Link
+        href={user ? "/dashboard" : "/login"}
+        className="rounded-lg bg-orange-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700"
+      >
+        {user ? "Go to dashboard" : "Get started"}
+      </Link>
     </div>
   );
 }
