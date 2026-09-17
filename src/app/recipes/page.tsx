@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
 import { RecipeBrowser } from "@/components/RecipeBrowser";
-import { RECIPE_CARD_COLUMNS } from "@/lib/recipes/types";
+import { RECIPE_CARD_COLUMNS, type RecipeCardData } from "@/lib/recipes/types";
 
 export default async function MyRecipesPage() {
   const supabase = await createClient();
@@ -36,7 +36,7 @@ export default async function MyRecipesPage() {
           My Recipes
         </h1>
         <RecipeBrowser
-          recipes={recipes ?? []}
+          recipes={(recipes ?? []) as unknown as RecipeCardData[]}
           userId={user.id}
           showCreateButton
           emptyMessage="You haven't added any recipes yet. Create your first one!"

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
 import { RecipeBrowser } from "@/components/RecipeBrowser";
-import { RECIPE_CARD_COLUMNS } from "@/lib/recipes/types";
+import { RECIPE_CARD_COLUMNS, type RecipeCardData } from "@/lib/recipes/types";
 
 export default async function DiscoverPage() {
   const supabase = await createClient();
@@ -35,7 +35,7 @@ export default async function DiscoverPage() {
           Discover Recipes
         </h1>
         <RecipeBrowser
-          recipes={recipes ?? []}
+          recipes={(recipes ?? []) as unknown as RecipeCardData[]}
           showCreateButton={false}
           emptyMessage="No recipes yet. Be the first to add one!"
         />

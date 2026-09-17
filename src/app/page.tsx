@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -6,6 +7,10 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/discover");
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-b from-sky-50 via-white to-white px-4 text-center">
@@ -17,10 +22,10 @@ export default async function Home() {
         </p>
       </div>
       <Link
-        href={user ? "/dashboard" : "/login"}
+        href="/login"
         className="rounded-lg bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
       >
-        {user ? "Go to dashboard" : "Get started"}
+        Get started
       </Link>
     </div>
   );

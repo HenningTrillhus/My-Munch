@@ -111,7 +111,7 @@ function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/discover");
     router.refresh();
   };
 
@@ -228,7 +228,7 @@ function SignupForm() {
     }
 
     if (signUpData.session) {
-      router.push("/dashboard");
+      router.push("/discover");
       router.refresh();
       return;
     }

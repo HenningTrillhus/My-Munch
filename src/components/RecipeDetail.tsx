@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { RecipeForm } from "@/components/RecipeForm";
-import type { Recipe } from "@/lib/recipes/types";
+import { RecipeComments } from "@/components/RecipeComments";
+import { ratingSummary, type Recipe } from "@/lib/recipes/types";
 
 export function RecipeDetail({
   recipe: initialRecipe,
@@ -13,7 +14,7 @@ export function RecipeDetail({
 }: {
   recipe: Recipe;
   isOwner: boolean;
-  userId?: string;
+  userId: string;
 }) {
   const router = useRouter();
   const [recipe, setRecipe] = useState(initialRecipe);
@@ -33,6 +34,10 @@ export function RecipeDetail({
     setNotes(initialRecipe.notes ?? "");
   }
 
+  const { average, count } = ratingSummary(recipe.recipe_ratings);
+  const myRating =
+    recipe.recipe_ratings.find((r) => r.user_id === userId)?.rating ?? 0;
+
   const saveNotes = async () => {
     setNotesStatus("saving");
     const supabase = createClient();
@@ -41,13 +46,32 @@ export function RecipeDetail({
   };
 
   const setRating = async (value: number) => {
-    const newValue = value === recipe.personal_rating ? 0 : value;
-    setRecipe({ ...recipe, personal_rating: newValue });
+    const newValue = value === myRating ? 0 : value;
+    const otherRatings = recipe.recipe_ratings.filter(
+      (r) => r.user_id !== userId,
+    );
+    setRecipe({
+      ...recipe,
+      recipe_ratings: newValue
+        ? [...otherRatings, { rating: newValue, user_id: userId }]
+        : otherRatings,
+    });
+
     const supabase = createClient();
-    await supabase
-      .from("recipes")
-      .update({ personal_rating: newValue || null })
-      .eq("id", recipe.id);
+    if (newValue === 0) {
+      await supabase
+        .from("recipe_ratings")
+        .delete()
+        .eq("recipe_id", recipe.id)
+        .eq("user_id", userId);
+    } else {
+      await supabase
+        .from("recipe_ratings")
+        .upsert(
+          { recipe_id: recipe.id, user_id: userId, rating: newValue },
+          { onConflict: "recipe_id,user_id" },
+        );
+    }
   };
 
   const handleBack = () => {
@@ -71,7 +95,7 @@ export function RecipeDetail({
       <div className="mx-auto max-w-lg rounded-2xl border border-gray-100 bg-white p-5 shadow-xl shadow-sky-900/5 sm:p-8">
         <h2 className="mb-5 text-xl font-semibold text-gray-900">Edit recipe</h2>
         <RecipeForm
-          userId={userId!}
+          userId={userId}
           initialRecipe={recipe}
           onCancel={() => setEditing(false)}
           onSaved={() => {
@@ -125,7 +149,16 @@ export function RecipeDetail({
         </div>
         <div className="flex flex-col gap-5 p-6">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <h1 className="text-2xl font-semibold text-gray-900">{recipe.title}</h1>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {recipe.title}
+              </h1>
+              {recipe.owner && (
+                <p className="mt-1 text-sm text-gray-500">
+                  by {recipe.owner.full_name}
+                </p>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {recipe.meal_type && (
                 <span className="rounded-full bg-gray-900 px-2.5 py-0.5 text-xs font-medium text-white">
@@ -146,6 +179,17 @@ export function RecipeDetail({
           <div className="flex flex-wrap gap-6">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                Community rating
+              </p>
+              <p className="flex items-center gap-1 text-red-500">
+                ♥ {count > 0 ? average.toFixed(1) : "—"}
+                <span className="text-xs text-gray-400">
+                  ({count} {count === 1 ? "review" : "reviews"})
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
                 Difficulty
               </p>
               <p className="text-amber-500">
@@ -155,28 +199,24 @@ export function RecipeDetail({
                 </span>
               </p>
             </div>
-            {isOwner && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Your rating
-                </p>
-                <p className="flex gap-0.5 text-lg">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <button
-                      key={value}
-                      onClick={() => setRating(value)}
-                      className={
-                        value <= (recipe.personal_rating ?? 0)
-                          ? "text-red-500"
-                          : "text-gray-300"
-                      }
-                    >
-                      ♥
-                    </button>
-                  ))}
-                </p>
-              </div>
-            )}
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                Your rating
+              </p>
+              <p className="flex gap-0.5 text-lg">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => setRating(value)}
+                    className={
+                      value <= myRating ? "text-red-500" : "text-gray-300"
+                    }
+                  >
+                    ♥
+                  </button>
+                ))}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
@@ -232,6 +272,12 @@ export function RecipeDetail({
               </p>
             </div>
           )}
+
+          <RecipeComments
+            recipeId={recipe.id}
+            userId={userId}
+            initialComments={recipe.recipe_comments}
+          />
         </div>
       </div>
     </div>

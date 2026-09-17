@@ -5,7 +5,7 @@ export function AppHeader({ initial }: { initial: string }) {
     <header className="sticky top-0 z-30 flex w-full items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-3.5 backdrop-blur sm:px-6 sm:py-4">
       <div className="flex items-center gap-6">
         <Link
-          href="/dashboard"
+          href="/discover"
           className="flex items-center gap-2 text-lg font-bold text-gray-900"
         >
           <span className="text-2xl">🍲</span>

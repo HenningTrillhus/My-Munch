@@ -27,7 +27,7 @@ export default async function AccountPage() {
     <AppShell initial={initial}>
       <main className="mx-auto flex max-w-sm flex-col gap-4 px-4 py-8 sm:py-12">
         <Link
-          href="/dashboard"
+          href="/discover"
           className="flex items-center gap-1 text-sm font-medium text-gray-400 transition hover:text-gray-700"
         >
           ← Back
