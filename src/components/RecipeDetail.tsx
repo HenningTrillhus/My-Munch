@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { RecipeComments } from "@/components/RecipeComments";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { CountryFlag } from "@/components/ui/CountryFlag";
 import { ratingSummary, type Recipe } from "@/lib/recipes/types";
 
 export function RecipeDetail({
@@ -136,7 +137,7 @@ export function RecipeDetail({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-sky-900/5">
-        <div className="flex h-56 items-center justify-center bg-gradient-to-b from-sky-100 to-sky-50 text-6xl">
+        <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-sky-100 to-sky-50 text-6xl">
           {recipe.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -146,6 +147,11 @@ export function RecipeDetail({
             />
           ) : (
             "🍽️"
+          )}
+          {recipe.country && (
+            <span className="absolute right-3 top-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow">
+              <CountryFlag country={recipe.country} size={32} />
+            </span>
           )}
         </div>
         <div className="flex flex-col gap-5 p-6">
@@ -157,7 +163,13 @@ export function RecipeDetail({
               {recipe.owner && (
                 <p className="mt-1 text-sm text-gray-500">
                   by {recipe.owner.full_name}
-                  {recipe.owner.country && ` · 🌍 ${recipe.owner.country}`}
+                  {recipe.owner.country && (
+                    <>
+                      {" · "}
+                      <CountryFlag country={recipe.owner.country} size={16} />{" "}
+                      {recipe.owner.country}
+                    </>
+                  )}
                 </p>
               )}
             </div>
@@ -168,8 +180,9 @@ export function RecipeDetail({
                 </span>
               )}
               {recipe.country && (
-                <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-                  🌍 {recipe.country}
+                <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                  <CountryFlag country={recipe.country} size={14} />
+                  {recipe.country}
                 </span>
               )}
               {recipe.categories.map((c) => (

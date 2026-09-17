@@ -85,6 +85,58 @@ export const COMMON_COUNTRIES = [
   "New Zealand",
 ] as const;
 
+const COUNTRY_ISO_CODES: Record<string, string> = {
+  Norway: "NO",
+  Sweden: "SE",
+  Denmark: "DK",
+  Finland: "FI",
+  Iceland: "IS",
+  "United Kingdom": "GB",
+  Ireland: "IE",
+  France: "FR",
+  Germany: "DE",
+  Italy: "IT",
+  Spain: "ES",
+  Portugal: "PT",
+  Netherlands: "NL",
+  Belgium: "BE",
+  Switzerland: "CH",
+  Austria: "AT",
+  Poland: "PL",
+  Greece: "GR",
+  Turkey: "TR",
+  Morocco: "MA",
+  Egypt: "EG",
+  Nigeria: "NG",
+  "South Africa": "ZA",
+  India: "IN",
+  China: "CN",
+  Japan: "JP",
+  "South Korea": "KR",
+  Thailand: "TH",
+  Vietnam: "VN",
+  Indonesia: "ID",
+  Philippines: "PH",
+  Mexico: "MX",
+  Brazil: "BR",
+  Argentina: "AR",
+  Peru: "PE",
+  "United States": "US",
+  Canada: "CA",
+  Australia: "AU",
+  "New Zealand": "NZ",
+};
+
+// Unicode flag emoji rely on the OS/browser having a font that renders
+// regional-indicator letter pairs as an actual flag glyph - Windows
+// Chrome/Edge commonly just show the raw two letters instead (e.g. "NO"),
+// so flags are rendered as real images (see CountryFlag) keyed by this
+// ISO 3166-1 alpha-2 code rather than as emoji text.
+export function countryIsoCode(country: string | null | undefined): string | null {
+  if (!country) return null;
+  return COUNTRY_ISO_CODES[country]?.toLowerCase() ?? null;
+}
+
 export type Ingredient = {
   amount: string;
   unit: string;

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
 import { UserSearch } from "@/components/UserSearch";
+import { CountryFlag } from "@/components/ui/CountryFlag";
 
 type FollowProfile = { id: string; username: string; full_name: string };
 
@@ -18,7 +19,7 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, full_name")
+    .select("username, full_name, country")
     .eq("id", user.id)
     .single();
 
@@ -62,8 +63,13 @@ export default async function AccountPage() {
 
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-sky-900/5 sm:p-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-lg font-semibold text-sky-700">
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-lg font-semibold text-sky-700">
               {initial}
+              {profile?.country && (
+                <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow ring-1 ring-gray-100">
+                  <CountryFlag country={profile.country} size={16} />
+                </span>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-lg font-semibold text-gray-900">
@@ -73,6 +79,12 @@ export default async function AccountPage() {
                 {profile?.username ? `@${profile.username} · ` : ""}
                 {user.email}
               </p>
+              {profile?.country && (
+                <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-600">
+                  <CountryFlag country={profile.country} size={16} />
+                  {profile.country}
+                </p>
+              )}
             </div>
             <Link
               href="/account/settings"
