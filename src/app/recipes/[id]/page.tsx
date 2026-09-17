@@ -30,7 +30,7 @@ export default async function RecipeDetailPage({
   const { data: recipe } = await supabase
     .from("recipes")
     .select(
-      "*, owner:profiles(username, full_name), recipe_ratings(rating, user_id), recipe_comments(id, body, created_at, user_id, profiles(username, full_name))",
+      "*, owner:profiles(username, full_name, country), recipe_ratings(rating, user_id), recipe_comments(id, body, created_at, user_id, profiles(username, full_name, country))",
     )
     .eq("id", id)
     .order("created_at", {

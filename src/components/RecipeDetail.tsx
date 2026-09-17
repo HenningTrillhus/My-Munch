@@ -156,6 +156,7 @@ export function RecipeDetail({
               {recipe.owner && (
                 <p className="mt-1 text-sm text-gray-500">
                   by {recipe.owner.full_name}
+                  {recipe.owner.country && ` · 🌍 ${recipe.owner.country}`}
                 </p>
               )}
             </div>
@@ -163,6 +164,11 @@ export function RecipeDetail({
               {recipe.meal_type && (
                 <span className="rounded-full bg-gray-900 px-2.5 py-0.5 text-xs font-medium text-white">
                   {recipe.meal_type}
+                </span>
+              )}
+              {recipe.country && (
+                <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                  🌍 {recipe.country}
                 </span>
               )}
               {recipe.categories.map((c) => (

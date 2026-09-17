@@ -1,12 +1,13 @@
 "use client";
 
-import { MEAL_TYPES, TIME_BUCKETS } from "@/lib/recipes/types";
+import { MEAL_TYPES, SORT_OPTIONS, TIME_BUCKETS, type SortOption } from "@/lib/recipes/types";
 
 export type FilterState = {
   search: string;
   mealType: string;
   category: string;
   timeBucket: string;
+  country: string;
   vegetarian: boolean;
   fish: boolean;
 };
@@ -16,6 +17,7 @@ export const EMPTY_FILTERS: FilterState = {
   mealType: "",
   category: "",
   timeBucket: "",
+  country: "",
   vegetarian: false,
   fish: false,
 };
@@ -26,11 +28,17 @@ const selectClasses =
 export function RecipeFilters({
   filters,
   onChange,
+  sort,
+  onSortChange,
   categories,
+  countries,
 }: {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
+  sort: SortOption;
+  onSortChange: (sort: SortOption) => void;
   categories: string[];
+  countries: string[];
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -38,10 +46,21 @@ export function RecipeFilters({
         type="search"
         value={filters.search}
         onChange={(e) => onChange({ ...filters, search: e.target.value })}
-        placeholder="Search for a recipe..."
+        placeholder="Search by title or country..."
         className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-sky-500"
       />
       <div className="flex flex-wrap items-center gap-3">
+        <select
+          value={sort}
+          onChange={(e) => onSortChange(e.target.value as SortOption)}
+          className={`${selectClasses} font-medium text-sky-700`}
+        >
+          {SORT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         <select
           value={filters.mealType}
           onChange={(e) => onChange({ ...filters, mealType: e.target.value })}
@@ -78,6 +97,20 @@ export function RecipeFilters({
             </option>
           ))}
         </select>
+        {countries.length > 0 && (
+          <select
+            value={filters.country}
+            onChange={(e) => onChange({ ...filters, country: e.target.value })}
+            className={selectClasses}
+          >
+            <option value="">All countries</option>
+            {countries.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+        )}
         <label className="flex items-center gap-1.5 text-sm text-gray-700">
           <input
             type="checkbox"
@@ -109,19 +142,25 @@ export function applyFilters<
     prep_time_minutes: number | null;
     is_vegetarian: boolean;
     is_fish: boolean;
+    country: string | null;
   },
 >(recipes: T[], filters: FilterState): T[] {
   return recipes.filter((recipe) => {
-    if (
-      filters.search &&
-      !recipe.title.toLowerCase().includes(filters.search.toLowerCase())
-    ) {
-      return false;
+    if (filters.search) {
+      const needle = filters.search.toLowerCase();
+      const matchesTitle = recipe.title.toLowerCase().includes(needle);
+      const matchesCountry = recipe.country?.toLowerCase().includes(needle) ?? false;
+      if (!matchesTitle && !matchesCountry) {
+        return false;
+      }
     }
     if (filters.mealType && recipe.meal_type !== filters.mealType) {
       return false;
     }
     if (filters.category && !recipe.categories.includes(filters.category)) {
+      return false;
+    }
+    if (filters.country && recipe.country !== filters.country) {
       return false;
     }
     if (filters.timeBucket) {

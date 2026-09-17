@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MEAL_TYPES, UNITS, type Ingredient, type Recipe } from "@/lib/recipes/types";
+import {
+  COMMON_COUNTRIES,
+  MEAL_TYPES,
+  UNITS,
+  type Ingredient,
+  type Recipe,
+} from "@/lib/recipes/types";
 
 const inputClasses =
   "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20";
@@ -33,6 +39,7 @@ export function RecipeForm({
     initialRecipe?.categories ?? [],
   );
   const [categoryInput, setCategoryInput] = useState("");
+  const [country, setCountry] = useState(initialRecipe?.country ?? "");
   const [isVegetarian, setIsVegetarian] = useState(
     initialRecipe?.is_vegetarian ?? false,
   );
@@ -139,6 +146,7 @@ export function RecipeForm({
       portions: portions ? Number(portions) : 1,
       price_kr: priceKr ? Number(priceKr) : null,
       difficulty: difficulty || null,
+      country: country.trim() || null,
       image_url: imageUrl,
       ingredients: ingredients.filter((ing) => ing.name.trim()),
       instructions: steps,
@@ -262,6 +270,26 @@ export function RecipeForm({
             ))}
           </div>
         )}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="recipe-country" className={labelClasses}>
+          Country of origin (optional)
+        </label>
+        <input
+          id="recipe-country"
+          type="text"
+          list="country-options"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          placeholder="e.g. Italy"
+          className={inputClasses}
+        />
+        <datalist id="country-options">
+          {COMMON_COUNTRIES.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </div>
 
       <div className="flex gap-4">

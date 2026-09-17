@@ -16,7 +16,7 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, full_name")
+    .select("username, full_name, country")
     .eq("id", user.id)
     .single();
 
@@ -43,6 +43,7 @@ export default async function AccountPage() {
             userId={user.id}
             initialUsername={profile?.username ?? ""}
             initialFullName={profile?.full_name ?? ""}
+            initialCountry={profile?.country ?? ""}
           />
 
           <div className="mt-8 border-t border-gray-100 pt-6">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { COMMON_COUNTRIES } from "@/lib/recipes/types";
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -15,14 +16,17 @@ export function AccountSettingsForm({
   userId,
   initialUsername,
   initialFullName,
+  initialCountry,
 }: {
   userId: string;
   initialUsername: string;
   initialFullName: string;
+  initialCountry: string;
 }) {
   const router = useRouter();
   const [username, setUsername] = useState(initialUsername);
   const [fullName, setFullName] = useState(initialFullName);
+  const [country, setCountry] = useState(initialCountry);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle",
   );
@@ -58,7 +62,7 @@ export function AccountSettingsForm({
 
     const { error } = await supabase
       .from("profiles")
-      .update({ username, full_name: fullName })
+      .update({ username, full_name: fullName, country: country.trim() || null })
       .eq("id", userId);
 
     if (error) {
@@ -101,6 +105,25 @@ export function AccountSettingsForm({
           autoComplete="name"
           className={inputClasses}
         />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="account-country" className={labelClasses}>
+          Country (optional)
+        </label>
+        <input
+          id="account-country"
+          type="text"
+          list="account-country-options"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          placeholder="e.g. Norway"
+          className={inputClasses}
+        />
+        <datalist id="account-country-options">
+          {COMMON_COUNTRIES.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </div>
       <button
         type="submit"
