@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   RecipeFilters,
   EMPTY_FILTERS,
@@ -9,7 +10,6 @@ import {
   type FilterState,
 } from "@/components/RecipeFilters";
 import { RecipeCard } from "@/components/RecipeCard";
-import { RecipeForm } from "@/components/RecipeForm";
 import {
   sortRecipes,
   type RecipeCardData,
@@ -37,7 +37,6 @@ export function RecipeBrowser({
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [sort, setSort] = useState<SortOption>("most_reviews");
   const [page, setPage] = useState(1);
-  const [showForm, setShowForm] = useState(false);
 
   const categories = useMemo(
     () => Array.from(new Set(recipes.flatMap((r) => r.categories))).sort(),
@@ -74,12 +73,12 @@ export function RecipeBrowser({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-center gap-3">
         {showCreateButton && userId && (
-          <button
-            onClick={() => setShowForm(true)}
+          <Link
+            href="/recipes/new"
             className="rounded-lg bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
           >
             + New recipe
-          </button>
+          </Link>
         )}
         <button
           onClick={handleRefresh}
@@ -148,22 +147,6 @@ export function RecipeBrowser({
             </div>
           )}
         </>
-      )}
-
-      {showForm && userId && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-3 py-6 sm:p-4 sm:py-12">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-8">
-            <h2 className="mb-5 text-xl font-semibold text-gray-900">New recipe</h2>
-            <RecipeForm
-              userId={userId}
-              onCancel={() => setShowForm(false)}
-              onSaved={(id) => {
-                setShowForm(false);
-                router.push(`/recipes/${id}`);
-              }}
-            />
-          </div>
-        </div>
       )}
     </div>
   );

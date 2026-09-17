@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  COMMON_CATEGORIES,
   COMMON_COUNTRIES,
   MEAL_TYPES,
   UNITS,
   type Ingredient,
   type Recipe,
 } from "@/lib/recipes/types";
+import { Dropdown } from "@/components/ui/Dropdown";
 
 const inputClasses =
   "w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20";
@@ -86,6 +88,14 @@ export function RecipeForm({
       setCategories([...categories, value]);
     }
     setCategoryInput("");
+  };
+
+  const toggleCategory = (category: string) => {
+    setCategories(
+      categories.includes(category)
+        ? categories.filter((c) => c !== category)
+        : [...categories, category],
+    );
   };
 
   const updateIngredient = (index: number, patch: Partial<Ingredient>) => {
@@ -203,19 +213,15 @@ export function RecipeForm({
           <label htmlFor="recipe-type" className={labelClasses}>
             Type
           </label>
-          <select
-            id="recipe-type"
+          <Dropdown
             value={mealType}
-            onChange={(e) => setMealType(e.target.value)}
-            className={inputClasses}
-          >
-            <option value="">Not selected</option>
-            {MEAL_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+            onChange={setMealType}
+            options={[
+              { value: "", label: "Not selected" },
+              ...MEAL_TYPES.map((type) => ({ value: type, label: type })),
+            ]}
+            placeholder="Not selected"
+          />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="recipe-time" className={labelClasses}>
@@ -234,6 +240,25 @@ export function RecipeForm({
 
       <div className="flex flex-col gap-1.5">
         <label className={labelClasses}>Categories</label>
+        <div className="flex flex-wrap gap-1.5">
+          {COMMON_CATEGORIES.map((category) => {
+            const active = categories.includes(category);
+            return (
+              <button
+                type="button"
+                key={category}
+                onClick={() => toggleCategory(category)}
+                className={
+                  active
+                    ? "rounded-full bg-sky-600 px-3 py-1 text-xs font-medium text-white"
+                    : "rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-sky-300 hover:text-sky-700"
+                }
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
         <div className="flex gap-2">
           <input
             type="text"
@@ -245,7 +270,7 @@ export function RecipeForm({
                 addCategory();
               }
             }}
-            placeholder="e.g. salad, healthy"
+            placeholder="Add a custom category..."
             className={inputClasses}
           />
           <button
@@ -256,18 +281,21 @@ export function RecipeForm({
             +
           </button>
         </div>
-        {categories.length > 0 && (
+        {categories.filter((c) => !(COMMON_CATEGORIES as readonly string[]).includes(c))
+          .length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {categories.map((category) => (
-              <button
-                type="button"
-                key={category}
-                onClick={() => setCategories(categories.filter((c) => c !== category))}
-                className="flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700"
-              >
-                {category} ✕
-              </button>
-            ))}
+            {categories
+              .filter((c) => !(COMMON_CATEGORIES as readonly string[]).includes(c))
+              .map((category) => (
+                <button
+                  type="button"
+                  key={category}
+                  onClick={() => setCategories(categories.filter((c) => c !== category))}
+                  className="flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700"
+                >
+                  {category} ✕
+                </button>
+              ))}
           </div>
         )}
       </div>
@@ -402,17 +430,13 @@ export function RecipeForm({
               placeholder="Amount"
               className={`${inputClasses} w-16 sm:w-20`}
             />
-            <select
+            <Dropdown
               value={ingredient.unit}
-              onChange={(e) => updateIngredient(index, { unit: e.target.value })}
-              className={`${inputClasses} w-20 sm:w-24`}
-            >
-              {UNITS.map((unit) => (
-                <option key={unit} value={unit}>
-                  {unit}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => updateIngredient(index, { unit: v })}
+              options={UNITS.map((unit) => ({ value: unit, label: unit }))}
+              placeholder="unit"
+              className="w-20 sm:w-24"
+            />
             <input
               type="text"
               value={ingredient.name}

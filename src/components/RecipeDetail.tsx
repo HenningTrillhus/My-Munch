@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { RecipeForm } from "@/components/RecipeForm";
 import { RecipeComments } from "@/components/RecipeComments";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ratingSummary, type Recipe } from "@/lib/recipes/types";
 
 export function RecipeDetail({
@@ -18,12 +19,14 @@ export function RecipeDetail({
 }) {
   const router = useRouter();
   const [recipe, setRecipe] = useState(initialRecipe);
-  const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(initialRecipe.notes ?? "");
   const [notesStatus, setNotesStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [ratingError, setRatingError] = useState("");
+  const [deleteState, setDeleteState] = useState<"idle" | "confirming" | "deleting" | "error">(
+    "idle",
+  );
 
   // initialRecipe is a fresh object every time the server re-sends data
   // (e.g. after router.refresh() following an edit). Re-sync local state
@@ -92,29 +95,18 @@ export function RecipeDetail({
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this recipe? This cannot be undone.")) return;
+    setDeleteState("deleting");
     const supabase = createClient();
-    await supabase.from("recipes").delete().eq("id", recipe.id);
+    const { error } = await supabase.from("recipes").delete().eq("id", recipe.id);
+
+    if (error) {
+      setDeleteState("error");
+      return;
+    }
+
     router.push("/recipes");
     router.refresh();
   };
-
-  if (editing) {
-    return (
-      <div className="mx-auto max-w-lg rounded-2xl border border-gray-100 bg-white p-5 shadow-xl shadow-sky-900/5 sm:p-8">
-        <h2 className="mb-5 text-xl font-semibold text-gray-900">Edit recipe</h2>
-        <RecipeForm
-          userId={userId}
-          initialRecipe={recipe}
-          onCancel={() => setEditing(false)}
-          onSaved={() => {
-            setEditing(false);
-            router.refresh();
-          }}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -127,14 +119,14 @@ export function RecipeDetail({
         </button>
         {isOwner && (
           <div className="flex gap-2">
-            <button
-              onClick={() => setEditing(true)}
+            <Link
+              href={`/recipes/${recipe.id}/edit`}
               className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Edit
-            </button>
+            </Link>
             <button
-              onClick={handleDelete}
+              onClick={() => setDeleteState("confirming")}
               className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
             >
               Delete
@@ -302,6 +294,21 @@ export function RecipeDetail({
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteState === "confirming" || deleteState === "deleting" || deleteState === "error"}
+        title="Delete this recipe?"
+        message={
+          deleteState === "error"
+            ? "Couldn't delete this recipe. Please try again."
+            : "This cannot be undone."
+        }
+        confirmLabel="Delete"
+        danger
+        loading={deleteState === "deleting"}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteState("idle")}
+      />
     </div>
   );
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
-import { AccountSettingsForm } from "@/components/AccountSettingsForm";
 import { UserSearch } from "@/components/UserSearch";
 
 type FollowProfile = { id: string; username: string; full_name: string };
@@ -19,7 +18,7 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, full_name, country")
+    .select("username, full_name")
     .eq("id", user.id)
     .single();
 
@@ -66,12 +65,22 @@ export default async function AccountPage() {
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-lg font-semibold text-sky-700">
               {initial}
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-lg font-semibold text-gray-900">
                 {displayName}
               </h1>
-              <p className="text-sm text-gray-500">{user.email}</p>
+              <p className="truncate text-sm text-gray-500">
+                {profile?.username ? `@${profile.username} · ` : ""}
+                {user.email}
+              </p>
             </div>
+            <Link
+              href="/account/settings"
+              aria-label="Settings"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 text-lg transition hover:bg-gray-50"
+            >
+              ⚙️
+            </Link>
           </div>
 
           <div className="mt-4 flex gap-6 border-t border-gray-100 pt-4 text-sm">
@@ -91,22 +100,6 @@ export default async function AccountPage() {
               <FollowList title="Followers" people={followers} />
             </div>
           )}
-        </div>
-
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-sky-900/5 sm:p-8">
-          <h2 className="mb-1 text-lg font-semibold text-gray-900">
-            Account settings
-          </h2>
-          <p className="mb-6 text-sm text-gray-500">
-            Update your username, name, or country.
-          </p>
-
-          <AccountSettingsForm
-            userId={user.id}
-            initialUsername={profile?.username ?? ""}
-            initialFullName={profile?.full_name ?? ""}
-            initialCountry={profile?.country ?? ""}
-          />
         </div>
 
         <Link

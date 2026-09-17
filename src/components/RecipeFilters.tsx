@@ -1,6 +1,7 @@
 "use client";
 
 import { MEAL_TYPES, SORT_OPTIONS, TIME_BUCKETS, type SortOption } from "@/lib/recipes/types";
+import { Dropdown } from "@/components/ui/Dropdown";
 
 export type FilterState = {
   search: string;
@@ -21,9 +22,6 @@ export const EMPTY_FILTERS: FilterState = {
   vegetarian: false,
   fish: false,
 };
-
-const selectClasses =
-  "rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-sky-500";
 
 export function RecipeFilters({
   filters,
@@ -50,66 +48,54 @@ export function RecipeFilters({
         className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-sky-500"
       />
       <div className="flex flex-wrap items-center gap-3">
-        <select
+        <Dropdown
           value={sort}
-          onChange={(e) => onSortChange(e.target.value as SortOption)}
-          className={`${selectClasses} font-medium text-sky-700`}
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={(v) => onSortChange(v as SortOption)}
+          options={SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          placeholder="Sort by"
+          className="w-40 font-medium text-sky-700"
+        />
+        <Dropdown
           value={filters.mealType}
-          onChange={(e) => onChange({ ...filters, mealType: e.target.value })}
-          className={selectClasses}
-        >
-          <option value="">All types</option>
-          {MEAL_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={(v) => onChange({ ...filters, mealType: v })}
+          options={[
+            { value: "", label: "All types" },
+            ...MEAL_TYPES.map((type) => ({ value: type, label: type })),
+          ]}
+          placeholder="All types"
+          className="w-36"
+        />
+        <Dropdown
           value={filters.category}
-          onChange={(e) => onChange({ ...filters, category: e.target.value })}
-          className={selectClasses}
-        >
-          <option value="">All categories</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={(v) => onChange({ ...filters, category: v })}
+          options={[
+            { value: "", label: "All categories" },
+            ...categories.map((category) => ({ value: category, label: category })),
+          ]}
+          placeholder="All categories"
+          className="w-40"
+        />
+        <Dropdown
           value={filters.timeBucket}
-          onChange={(e) => onChange({ ...filters, timeBucket: e.target.value })}
-          className={selectClasses}
-        >
-          <option value="">All times</option>
-          {TIME_BUCKETS.map((bucket) => (
-            <option key={bucket.label} value={bucket.label}>
-              {bucket.label}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => onChange({ ...filters, timeBucket: v })}
+          options={[
+            { value: "", label: "All times" },
+            ...TIME_BUCKETS.map((bucket) => ({ value: bucket.label, label: bucket.label })),
+          ]}
+          placeholder="All times"
+          className="w-36"
+        />
         {countries.length > 0 && (
-          <select
+          <Dropdown
             value={filters.country}
-            onChange={(e) => onChange({ ...filters, country: e.target.value })}
-            className={selectClasses}
-          >
-            <option value="">All countries</option>
-            {countries.map((country) => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => onChange({ ...filters, country: v })}
+            options={[
+              { value: "", label: "All countries" },
+              ...countries.map((country) => ({ value: country, label: country })),
+            ]}
+            placeholder="All countries"
+            className="w-36"
+          />
         )}
         <label className="flex items-center gap-1.5 text-sm text-gray-700">
           <input

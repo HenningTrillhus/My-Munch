@@ -18,6 +18,19 @@ export const TIME_BUCKETS = [
   { label: "Over 60 min", max: Infinity },
 ] as const;
 
+export const COMMON_CATEGORIES = [
+  "quick",
+  "healthy",
+  "comfort food",
+  "family favorite",
+  "budget-friendly",
+  "spicy",
+  "meal prep",
+  "party food",
+  "kid-friendly",
+  "low-carb",
+] as const;
+
 export const SORT_OPTIONS = [
   { value: "most_reviews", label: "Most reviews" },
   { value: "highest_rated", label: "Highest rated" },
