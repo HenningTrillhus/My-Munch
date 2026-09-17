@@ -16,7 +16,10 @@ import {
   type SortOption,
 } from "@/lib/recipes/types";
 
-const PAGE_SIZE = 20;
+// 21 divides evenly into full rows at both grid widths used
+// (2 columns on phones, 3 columns from lg up), so the last page of
+// a full set doesn't end with an awkward half-empty row.
+const PAGE_SIZE = 21;
 
 export function RecipeBrowser({
   recipes,

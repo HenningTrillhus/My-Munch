@@ -32,6 +32,7 @@ export function RecipeComments({
   const [comments, setComments] = useState(initialComments);
   const [body, setBody] = useState("");
   const [status, setStatus] = useState<"idle" | "posting">("idle");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,18 +40,21 @@ export function RecipeComments({
     if (!trimmed) return;
 
     setStatus("posting");
+    setError("");
     const supabase = createClient();
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from("recipe_comments")
       .insert({ recipe_id: recipeId, user_id: userId, body: trimmed })
       .select("id, body, created_at, user_id, profiles(username, full_name)")
       .single();
 
     setStatus("idle");
-    if (!error && data) {
-      setComments([...comments, data as unknown as RecipeComment]);
-      setBody("");
+    if (dbError || !data) {
+      setError("Couldn't post your comment. Please try again.");
+      return;
     }
+    setComments([...comments, data as unknown as RecipeComment]);
+    setBody("");
   };
 
   return (
@@ -97,6 +101,7 @@ export function RecipeComments({
           Post
         </button>
       </form>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }

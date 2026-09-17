@@ -20,9 +20,10 @@ export function RecipeDetail({
   const [recipe, setRecipe] = useState(initialRecipe);
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(initialRecipe.notes ?? "");
-  const [notesStatus, setNotesStatus] = useState<"idle" | "saving" | "saved">(
-    "idle",
-  );
+  const [notesStatus, setNotesStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [ratingError, setRatingError] = useState("");
 
   // initialRecipe is a fresh object every time the server re-sends data
   // (e.g. after router.refresh() following an edit). Re-sync local state
@@ -41,12 +42,36 @@ export function RecipeDetail({
   const saveNotes = async () => {
     setNotesStatus("saving");
     const supabase = createClient();
-    await supabase.from("recipes").update({ notes }).eq("id", recipe.id);
-    setNotesStatus("saved");
+    const { error } = await supabase
+      .from("recipes")
+      .update({ notes })
+      .eq("id", recipe.id);
+    setNotesStatus(error ? "error" : "saved");
   };
 
   const setRating = async (value: number) => {
     const newValue = value === myRating ? 0 : value;
+    setRatingError("");
+
+    const supabase = createClient();
+    const { error } = newValue === 0
+      ? await supabase
+          .from("recipe_ratings")
+          .delete()
+          .eq("recipe_id", recipe.id)
+          .eq("user_id", userId)
+      : await supabase
+          .from("recipe_ratings")
+          .upsert(
+            { recipe_id: recipe.id, user_id: userId, rating: newValue },
+            { onConflict: "recipe_id,user_id" },
+          );
+
+    if (error) {
+      setRatingError("Couldn't save your rating. Please try again.");
+      return;
+    }
+
     const otherRatings = recipe.recipe_ratings.filter(
       (r) => r.user_id !== userId,
     );
@@ -56,22 +81,6 @@ export function RecipeDetail({
         ? [...otherRatings, { rating: newValue, user_id: userId }]
         : otherRatings,
     });
-
-    const supabase = createClient();
-    if (newValue === 0) {
-      await supabase
-        .from("recipe_ratings")
-        .delete()
-        .eq("recipe_id", recipe.id)
-        .eq("user_id", userId);
-    } else {
-      await supabase
-        .from("recipe_ratings")
-        .upsert(
-          { recipe_id: recipe.id, user_id: userId, rating: newValue },
-          { onConflict: "recipe_id,user_id" },
-        );
-    }
   };
 
   const handleBack = () => {
@@ -222,6 +231,9 @@ export function RecipeDetail({
                   </button>
                 ))}
               </p>
+              {ratingError && (
+                <p className="text-xs text-red-600">{ratingError}</p>
+              )}
             </div>
           </div>
 
@@ -269,12 +281,16 @@ export function RecipeDetail({
                 placeholder="Write a note about this recipe — e.g. what you changed or what worked well..."
                 className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-sky-500 focus:bg-white"
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p
+                className={`mt-1 text-xs ${notesStatus === "error" ? "text-red-600" : "text-gray-400"}`}
+              >
                 {notesStatus === "saving"
                   ? "Saving..."
                   : notesStatus === "saved"
                     ? "Saved"
-                    : "Saves when you click away"}
+                    : notesStatus === "error"
+                      ? "Couldn't save. Please try again."
+                      : "Saves when you click away"}
               </p>
             </div>
           )}
